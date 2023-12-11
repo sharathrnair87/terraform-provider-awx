@@ -66,20 +66,23 @@ func (r *awxOrganizationResource) Schema(ctx context.Context, req resource.Schem
 				Required: true,
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
-				//Computed: true,
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"max_hosts": schema.Int64Attribute{
 				Optional: true,
-				//Computed: true,
+				Computed: true,
 			},
 			"custom_virtualenv": schema.StringAttribute{
-				Optional: true,
-				//Computed: true,
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"default_environment": schema.StringAttribute{
-				Optional: true,
-				//Computed: true,
+				Optional:      true,
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 		},
 	}
@@ -107,15 +110,21 @@ func (r *awxOrganizationResource) Create(ctx context.Context, req resource.Creat
 		"name": data.Name.String(),
 	})
 
-	params := map[string]interface{}{
-		"name":                data.Name.ValueString(),
-		"description":         data.Description.ValueString(),
-		"max_hosts":           data.MaxHosts.ValueInt64(),
-		"custom_virtualenv":   data.CustomVirtualenv.ValueString(),
-		"default_environment": data.DefaultEnvironment.ValueString(),
+	org := make(map[string]interface{})
+
+	org["name"] = data.Name.ValueString()
+	org["description"] = data.Description.ValueString()
+	org["max_hosts"] = data.MaxHosts.ValueInt64()
+
+	if !data.CustomVirtualenv.IsNull() && !data.CustomVirtualenv.IsUnknown() {
+		org["custom_virtualenv"] = data.CustomVirtualenv.ValueString()
 	}
 
-	organization, err := r.client.OrganizationsService.CreateOrganization(params, map[string]string{})
+	if !data.DefaultEnvironment.IsNull() && !data.DefaultEnvironment.IsUnknown() {
+		org["default_environment"] = data.DefaultEnvironment.ValueString()
+	}
+
+	organization, err := r.client.OrganizationsService.CreateOrganization(org, map[string]string{})
 
 	if err != nil {
 		res.Diagnostics.AddError("AWX API Error!", fmt.Sprintf("Unable to create AWX Organization: %s", err.Error()))
@@ -140,7 +149,7 @@ func (r *awxOrganizationResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	_, err := strconv.Atoi(data.ID.ValueString())
+	id, err := strconv.Atoi(data.ID.ValueString())
 	if err != nil {
 		res.Diagnostics.AddError("TF State Error!", fmt.Sprintf("ID value in state is not numeric: %s", err.Error()))
 		return
@@ -159,7 +168,7 @@ func (r *awxOrganizationResource) Read(ctx context.Context, req resource.ReadReq
 	  })
 	*/
 
-	organization, err := r.client.OrganizationsService.GetOrganizationsByID(3, make(map[string]string))
+	organization, err := r.client.OrganizationsService.GetOrganizationsByID(id, make(map[string]string))
 	if err != nil {
 		res.Diagnostics.AddError("AWX API Error!", fmt.Sprintf("Unable to find AWX Organization: %s", err.Error()))
 		return
@@ -175,7 +184,6 @@ func (r *awxOrganizationResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 func (r *awxOrganizationResource) organizationModelToState(organization *awx.Organization, data *awxOrganizationResourceModel) {
-
 	data.ID = types.StringValue(strconv.Itoa(organization.ID))
 	data.Name = types.StringValue(organization.Name)
 	data.Description = types.StringValue(organization.Description)
@@ -215,13 +223,21 @@ func (r *awxOrganizationResource) update(ctx context.Context, data *awxOrganizat
 		return err
 	}
 
-	organization, err := r.client.OrganizationsService.UpdateOrganization(id, map[string]interface{}{
-		"name":                data.Name.ValueString(),
-		"description":         data.Description.ValueString(),
-		"max_hosts":           data.MaxHosts.ValueInt64(),
-		"custom_virtualenv":   data.CustomVirtualenv.ValueString(),
-		"default_environment": data.DefaultEnvironment.ValueString(),
-	}, map[string]string{})
+	org := make(map[string]interface{})
+
+	org["name"] = data.Name.ValueString()
+	org["description"] = data.Description.ValueString()
+	org["max_hosts"] = data.MaxHosts.ValueInt64()
+
+	if !data.CustomVirtualenv.IsNull() && !data.CustomVirtualenv.IsUnknown() {
+		org["custom_virtualenv"] = data.CustomVirtualenv.ValueString()
+	}
+
+	if !data.DefaultEnvironment.IsNull() && !data.DefaultEnvironment.IsUnknown() {
+		org["default_environment"] = data.DefaultEnvironment.ValueString()
+	}
+
+	organization, err := r.client.OrganizationsService.UpdateOrganization(id, org, map[string]string{})
 
 	if err != nil {
 		diags.AddError("AWX API Error!", fmt.Sprintf("Unable to Update Organization: %s", err.Error()))
