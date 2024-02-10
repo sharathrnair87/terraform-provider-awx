@@ -181,8 +181,8 @@ func (r *awxOrganizationResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	tflog.Trace(ctx, "AWX Organization found", map[string]interface{}{
-		"name": organization.Name,
-    "default_environment": organization.DefaultEnvironment,
+		"name":                organization.Name,
+		"default_environment": organization.DefaultEnvironment,
 	})
 
 	r.organizationModelToState(organization, data)
