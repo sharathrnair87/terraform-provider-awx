@@ -4,9 +4,8 @@ go 1.21.4
 
 require (
 	github.com/hashicorp/terraform-plugin-framework v1.4.2
-	github.com/hashicorp/terraform-plugin-framework-validators v0.12.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/sharathrnair87/goawx v0.0.0-20231129042036-1f30e55d6fe1
+	github.com/sharathrnair87/goawx v0.0.0-20240210015815-8b1913104590
 )
 
 require (

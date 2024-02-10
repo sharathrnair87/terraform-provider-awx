@@ -51,7 +51,7 @@ type awxOrganizationResourceModel struct {
 	Description        types.String `tfsdk:"description"`
 	MaxHosts           types.Int64  `tfsdk:"max_hosts"`
 	CustomVirtualenv   types.String `tfsdk:"custom_virtualenv"`
-	DefaultEnvironment types.String `tfsdk:"default_environment"`
+	DefaultEnvironment types.Int64  `tfsdk:"default_environment"`
 }
 
 func (r *awxOrganizationResource) Schema(ctx context.Context, req resource.SchemaRequest, res *resource.SchemaResponse) {
@@ -79,11 +79,16 @@ func (r *awxOrganizationResource) Schema(ctx context.Context, req resource.Schem
 				Computed:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
-			"default_environment": schema.StringAttribute{
-				Optional:      true,
-				Computed:      true,
-				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			"default_environment": schema.Int64Attribute{
+				Optional: true,
+				Computed: true,
+				//PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
+			//"default_environment": schema.StringAttribute{
+			//	Optional:      true,
+			//	Computed:      true,
+			//	PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			//},
 		},
 	}
 }
@@ -121,7 +126,8 @@ func (r *awxOrganizationResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	if !data.DefaultEnvironment.IsNull() && !data.DefaultEnvironment.IsUnknown() {
-		org["default_environment"] = data.DefaultEnvironment.ValueString()
+		org["default_environment"] = data.DefaultEnvironment.ValueInt64()
+		//org["default_environment"] = data.DefaultEnvironment.ValueString()
 	}
 
 	organization, err := r.client.OrganizationsService.CreateOrganization(org, map[string]string{})
@@ -176,6 +182,7 @@ func (r *awxOrganizationResource) Read(ctx context.Context, req resource.ReadReq
 
 	tflog.Trace(ctx, "AWX Organization found", map[string]interface{}{
 		"name": organization.Name,
+    "default_environment": organization.DefaultEnvironment,
 	})
 
 	r.organizationModelToState(organization, data)
@@ -189,7 +196,8 @@ func (r *awxOrganizationResource) organizationModelToState(organization *awx.Org
 	data.Description = types.StringValue(organization.Description)
 	data.MaxHosts = types.Int64Value(int64(organization.MaxHosts))
 	data.CustomVirtualenv = types.StringValue(organization.CustomVirtualenv)
-	data.DefaultEnvironment = types.StringValue(organization.DefaultEnvironment)
+	//data.DefaultEnvironment = types.StringValue(organization.DefaultEnvironment)
+	data.DefaultEnvironment = types.Int64Value(int64(organization.DefaultEnvironment))
 }
 
 func (r *awxOrganizationResource) Update(ctx context.Context, req resource.UpdateRequest, res *resource.UpdateResponse) {
@@ -234,7 +242,8 @@ func (r *awxOrganizationResource) update(ctx context.Context, data *awxOrganizat
 	}
 
 	if !data.DefaultEnvironment.IsNull() && !data.DefaultEnvironment.IsUnknown() {
-		org["default_environment"] = data.DefaultEnvironment.ValueString()
+		org["default_environment"] = data.DefaultEnvironment.ValueInt64()
+		//org["default_environment"] = data.DefaultEnvironment.ValueString()
 	}
 
 	organization, err := r.client.OrganizationsService.UpdateOrganization(id, org, map[string]string{})

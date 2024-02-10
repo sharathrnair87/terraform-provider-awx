@@ -152,7 +152,7 @@ func (p *AWXProvider) Resources(ctx context.Context) []func() resource.Resource 
 }
 
 func (p *AWXProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return allAWXDataSources
 }
 
 func New(version string) func() provider.Provider {

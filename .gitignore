@@ -1,0 +1,20 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+*.tfvars
+
+# Local .tfvars files (if any)
+*.auto.tfvars
+*.auto.tfvars.json
+
+# .tfstate files for specific workspace
+terraform.tfstate.d/*
+.terraform.lock.hcl
+terraform/
+
+# Crash log files
+crash.log
+out.log
+*.log
